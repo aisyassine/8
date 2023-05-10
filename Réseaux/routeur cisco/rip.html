@@ -40,10 +40,11 @@
     }
 
     pre {
-        background-color: #f4f4f4;
-        border: 1px solid #ddd;
-        padding: 10px;
-        border-radius: 5px;
+        	color : lime;
+            background-color: #000000;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 14px;
     }
 </style>
 </head>
@@ -159,13 +160,13 @@ R5(config-router)#end
 	
 	
 	
-	<centre><img src="https://hannibal52.github.io/COURS/R%C3%A9seaux/routeur%20cisco/rip_files/article_213_004.png"> </centre>
+	<centre><img src="https://aisyassine.github.io/8/R%C3%A9seaux/routeur%20cisco/rip_files/article_213_004.png"> </centre>
 
 <br>
     <h2>8. RIP et la métrique</h2>
     <p>RIP utilise le nombre de sauts (hop count) comme métrique pour déterminer le meilleur chemin vers une destination. Le nombre de sauts est égal au nombre de routeurs traversés pour atteindre une destination spécifique. La métrique maximale autorisée pour RIP est de 15 sauts, et toute destination à plus de 15 sauts est considérée comme inatteignable.</p>
     
-	<centre><img src="https://hannibal52.github.io/COURS/R%C3%A9seaux/routeur%20cisco/rip_files/article_213_003.png"> </centre>
+	<centre><img src="https://aisyassine.github.io/8/R%C3%A9seaux/routeur%20cisco/rip_files/article_213_003.png"> </centre>
 
 	
 	
@@ -228,7 +229,7 @@ Router(config-router)# timers basic 45 270 360 270
 <p>Comme je l’ai cité dans les différences entre RIPv1 et RIPv2, RIPv1 ne prend pas en charge le masque de sous-réseau dans les mises à jour de la table de routage. Par conséquence RIP ne peut pas prendre en charge des réseaux discontinus, des réseaux VLSM (réseau ayant un masque à valeur variable), ou encore un super-réseau de routage inter-domaine et sans classe.
 Pour mieux comprendre ce que je viens de dire voici le schéma d’un réseau ayant un problème de discontinuité : </p>
 		
-		<img src="https://hannibal52.github.io/COURS/R%C3%A9seaux/routeur%20cisco/rip_files/article_213_008.png">
+		<img src="https://aisyassine.github.io/8/R%C3%A9seaux/routeur%20cisco/rip_files/article_213_008.png">
 		
  <p>Comme on peut le voir, à gauche du schéma R1 connait deux sous-réseaux (172.16.10.0\24 et 172.16.20.0\24).
 Et on peut voir aussi qu’à droite du schéma R3 connait trois sous-réseaux (172.16.30.0\24, 172.16.40.0\24 et 172.16.50.0\24).
@@ -251,7 +252,7 @@ Avec RIPv1, lorsque R1 et R3 enverront leur table de routage à R2, l’informat
 		
 		
 		
-	<img src="https://hannibal52.github.io/COURS/R%C3%A9seaux/routeur%20cisco/rip_files/article_213_006.png">
+	<img src="https://aisyassine.github.io/8/R%C3%A9seaux/routeur%20cisco/rip_files/article_213_006.png">
 
 	 <br>
 	 
