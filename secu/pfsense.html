@@ -1,556 +1,376 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <!-- Required meta tags -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-
-    <title>Tuto Pfsense</title>
+<!DOCTYPE html>
+<!-- saved from url=(0108)https://www.provya.net/?d=2016/10/02/07/48/16-pfsense-configurer-un-cluster-de-2-pfsense-redondants-failover -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 	
-	 <style>
-	 pre{
+	<title>[pfSense] Configurer un cluster de 2 pfSense redondants (failover) - Provya - Tutoriaux pfSense</title>
+	<meta name="generator" content="BlogoText">
+	<meta name="robots" content="all">
+	<meta name="author" content="Guillaume">
+	<meta name="viewport" content="width=device-width, user-scalable=yes">
+	<meta name="keywords" content="failover, haute disponibilité, HA, pfSense, XMLRPC, pfsync">
+	<meta name="description" content="Provya.net regroupe des tutoriaux complets sur pfSense et OPNsense. Retrouvez nos articles et nos partages de liens et d&#39;actualités !">
+	<meta prefix="og: http://ogp.me/ns#" property="og:title" content="[pfSense] Configurer un cluster de 2 pfSense redondants (failover) - Provya">
+	<meta prefix="og: http://ogp.me/ns#" property="og:description" content="Tutoriel sur la configuration d&#39;un cluster de serveurs pfSense (failover)">
+	<meta prefix="og: http://ogp.me/ns#" property="og:image" content="https://provya.net/img/pfsense_logo_small.png">
+	<meta prefix="og: http://ogp.me/ns#" property="og:url" content="https://www.provya.net/?d=2016/10/02/07/48/16-pfsense-configurer-un-cluster-de-2-pfsense-redondants-failover">
+	<link rel="icon" type="image/png" href="https://www.provya.net/img/favicon-provya.png">
+	<link rel="stylesheet" href="./pfSense_files/style.css">
+	<link type="application/rss+xml" rel="alternate" title="RSS - Articles" href="https://www.provya.net/rss.php">
+	<link rel="alternate" type="application/rss+xml" title="RSS - Les liens" href="https://www.provya.net/rss.php?mode=links">
+	<link rel="alternate" type="application/atom+xml" title="ATOM - Le blog" href="https://www.provya.net/atom.php">
+	<link rel="alternate" type="application/atom+xml" title="ATOM - Les liens" href="https://www.provya.net/atom.php?mode=links">
+
+	<!-- Matomo -->
+	<script type="text/javascript" async="" defer="" src="./pfSense_files/matoprovya.js.téléchargement"></script><script type="text/javascript">
+	  var _paq = _paq || [];
+	  /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
+	  _paq.push(['trackPageView']);
+	  _paq.push(['enableLinkTracking']);
+	  (function() {
+	    var u="//stat.provya.net/";
+	    _paq.push(['setTrackerUrl', u+'matoprovya.php']);
+	    _paq.push(['setSiteId', '1']);
+	    var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+	    g.type='text/javascript'; g.async=true; g.defer=true; g.src=u+'matoprovya.js'; s.parentNode.insertBefore(g,s);
+	  })();
+	</script>
+	<noscript><p><img src="https://stat.provya.net/matoprovya.php?idsite=1&amp;rec=1" style="border:0;" alt="" /></p></noscript>
+
+<!-- End Matomo Code -->
+</head>
+<body>
+
  
-	 color: lime;
-	 background-color: #000000;
-	 height: 100%
-	 
-	 }
-	 
-	 .col1, .col2 {
-  display: inline-block;
-}
-.col1{
-
-height :100%; }
-
-.row1 {
-  display: flex;
-  align-items: flex-start;
-  padding-left: 25px;
-}
-	 </style>
-	 
-  </head>
-  <body>
-    <center><h1>TP Pfsense (Alain H.)</h1></center>
-	
-	<center><table class="table table-dark" style="width: 65%;" >
-	
- 
-  <thead>
-    <tr>
-      <th scope="col">WAN</th>
-      <th scope="col">LAN</th>
-      <th scope="col">DMZ</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>1 poste W10 </td>
-      <td>1 poste W10 </td>
-      <td>1 SRV WEB</td>
-    </tr>
-     <tr>
-      <td> </td>
-      <td>1 poste Linux</td>
-      <td>1 SRV FICH</td>
-    </tr>
-  </tbody>
-</table></center>
-
-<br>
-<br>
-<br>
-
-<div class="row1">
-
-<div class="col1">
-
-<pre>
-  
-
-
-   <a style="color: #82FFB4;">[Poste W10]</a>
-      |
-      |
-      |
-      |
-      | <a style="color: #FFFFFF;">(WAN)</a> 
-      |
-      |
-      |
-   <a style="color: #2BEAFF; background-color:#303030; "> PFSENSE FIREWALL</a> 
-      |          |
-      |          |
-      |          |
-      |          | <a style="color: #FFFFFF;">(DMZ)  </a> 
-      |          | 
-      |          | 
-      |          | 
-      |          | 
-      |          <a style="color: #99FFE7;">[SRV WEB]  </a> 
-      |          <a style="color: #99FFE7;">[SRV FILE]  </a>
-      |     
-      |     
-      |     
-      | <a style="color: #FFFFFF;">(LAN)</a>
-      |
-      <a style="color: #82FFB4;">[Poste W10]</a>
-      <a style="color: #82FFB4;">[Poste Linux]</a>
-      
-  
-   
- 
-   </pre>
-</div>
-
-<div class="col2">
-	<ol>
-  <li>
-    Installation de PfSense
-    <ul>
-      <li>Téléchargement de l'image ISO de PfSense.</li>
-      <li>Installation de PfSense sur le matériel prévu.</li>
-      <li>Configuration des interfaces réseau (WAN, LAN, DMZ).</li>
-    </ul>
-  </li>
-  <li>
-    Configuration de PfSense
-    <ul>
-      <li>Activation et configuration du serveur DHCP.</li>
-      <li>Activation et configuration du serveur DNS.</li>
-      <li>Création d'un deuxième compte administrateur "backup".</li>
-      <li>Activation et configuration de l'accès SSH.</li>
-      <li>Configuration de l'interface graphique en français.</li>
-      <li>Configuration de l'accès à l'interface graphique depuis le WAN.</li>
-    </ul>
-  </li>
-  <li>
-    Installation et configuration des postes et serveurs
-    <ul>
-      <li>Installation de Windows 10 sur les postes prévus.</li>
-      <li>Installation de Linux sur le poste prévu.</li>
-      <li>Installation et configuration du serveur web dans la DMZ.</li>
-      <li>Installation et configuration du serveur de fichiers dans la DMZ, avec création d'un partage NFS et d'un partage avec quota de 1 Go.</li>
-    </ul>
-  </li>
-  <li>
-    Configuration des accès et règles de pare-feu
-    <ul>
-      <li>Création de règles pour permettre l'accès au partage de fichiers depuis les postes Windows 10 et Linux.</li>
-      <li>Configuration des règles de pare-feu pour contrôler l'accès à la DMZ.</li>
-    </ul>
-  </li>
-  <li>
-    Configuration du VPN SSL avec OpenVPN
-    <ul>
-      <li>Installation et configuration d'OpenVPN.</li>
-      <li>Configuration des règles de pare-feu pour le VPN.</li>
-    </ul>
-  </li>
-  <li>
-    Génération et association des paires de clés pour l'accès SSH
-    <ul>
-      <li>Génération d'une paire de clés avec Powershell pour le compte "admin".</li>
-      <li>Génération d'une paire de clés avec Putty pour le compte "backup".</li>
-      <li>Association des clés avec les comptes correspondants.</li>
-    </ul>
-  </li>
-  <li>
-    Vérification et tests
-    <ul>
-      <li>Vérification de la configuration et des règles de pare-feu.</li>
-      <li>Tests d'accès et de fonctionnement des services et partages de fichiers.</li>
-      <li>Tests de connectivité et de performance du VPN.</li>
-    </ul>
-  </li>
-</ol>
-</div>
-</div>
-   <br>
-     <br>
-	   <br>
-<div class="row">
-  <div class="col-4">
-    <div class="list-group" id="list-tab" role="tablist">
-      <a class="list-group-item list-group-item-action active" id="list-home-list" data-toggle="list" href="#list-home" role="tab" aria-controls="home">Home</a>
-      <a class="list-group-item list-group-item-action" id="list-profile-list" data-toggle="list" href="#list-profile" role="tab" aria-controls="profile">Installation de PfSense</a>
-      <a class="list-group-item list-group-item-action" id="list-messages-list" data-toggle="list" href="#list-messages" role="tab" aria-controls="messages">Configuration de PfSense</a>
-      <a class="list-group-item list-group-item-action" id="list-settings-list" data-toggle="list" href="#list-settings" role="tab" aria-controls="settings">Installation et configuration des postes et serveurs</a>
-	  <a class="list-group-item list-group-item-action" id="list-settings1-list" data-toggle="list" href="#list-settings1" role="tab" aria-controls="settings1">Configuration des accès et règles de pare-feu pour  le partage de fichiers sur PfSense</a>
-	  <a class="list-group-item list-group-item-action" id="list-settings2-list" data-toggle="list" href="#list-settings2" role="tab" aria-controls="settings2">Installation du paquet OpenVPN</a>
-	  <a class="list-group-item list-group-item-action" id="list-settings3-list" data-toggle="list" href="#list-settings3" role="tab" aria-controls="settings3">Génération et association des paires de clés pour l'accès SSH sur PfSense</a>
-	 <a class="list-group-item list-group-item-action" id="list-settings3-list" data-toggle="list" href="#list-settings4" role="tab" aria-controls="settings4">Vérification de la configuration et des règles de pare-feu</a>
-  
+<main>
+	<div id="scroll-bar" style="width: 40.5682%;">
+		<div id="scroll-bar-inner"></div>
 	</div>
-  </div>
-  <div class="col-8">
-    <div class="tab-content" id="nav-tabContent">
-      
-	  <div class="tab-pane fade show active" id="list-home" role="tabpanel" aria-labelledby="list-home-list"> Hello Dolores  !</div>
-      <div class="tab-pane fade" id="list-profile" role="tabpanel" aria-labelledby="list-profile-list">
-	  <ol>
-  <li>
-    Prérequis
-    <ul>
-      <li>Une machine virtuelle VMware avec PfSense déjà installé.</li>
-    </ul>
-  </li>
-  <li>
-    Étapes
-    <ol>
-      <li>
-        Configuration des interfaces réseau dans VMware
-        <ol>
-          <li>Ouvrez VMware et sélectionnez votre machine virtuelle PfSense.</li>
-          <li>Cliquez avec le bouton droit de la souris sur la machine virtuelle PfSense et sélectionnez Settings.</li>
-          <li>Dans l'onglet Hardware, cliquez sur Add pour ajouter de nouvelles interfaces réseau.</li>
-          <li>Sélectionnez Network Adapter puis cliquez sur Next.</li>
-          <li>Répétez ces étapes pour ajouter trois interfaces réseau : WAN, LAN et DMZ.</li>
-          <li>Pour chaque interface, sélectionnez le mode de réseau approprié :
-            <ul>
-              <li>Pour l'interface WAN, sélectionnez Bridged (ce qui signifie que la VM partagera le réseau avec votre machine hôte).</li>
-              <li>Pour l'interface LAN et DMZ, sélectionnez Custom: Specific virtual network et assignez-le à un réseau virtuel différent pour chacun.</li>
-            </ul>
-          </li>
-        </ol>
-      </li>
-      <li>
-        Configuration des interfaces réseau dans PfSense
-        <ol>
-          <li>Démarrez votre machine virtuelle PfSense.</li>
-          <li>Une fois que PfSense est démarré, sélectionnez l'option Assign Interfaces dans le menu.</li>
-          <li>Suivez les instructions à l'écran pour assigner les interfaces WAN, LAN et DMZ aux adaptateurs réseau que vous avez ajoutés précédemment.</li>
-          <li>Après avoir assigné les interfaces, sélectionnez l'option Set interface(s) IP address.</li>
-          <li>Configurez une adresse IP pour chaque interface :
-            <ul>
-              <li>Pour l'interface WAN, vous pouvez généralement obtenir une adresse IP automatiquement via DHCP. Sinon, vous devrez spécifier une adresse IP statique.</li>
-              <li>Pour les interfaces LAN et DMZ, spécifiez des adresses IP statiques dans des sous-réseaux différents.</li>
-            </ul>
-          </li>
-          <li>Une fois que vous avez configuré les adresses IP, votre PfSense devrait être prêt à être utilisé. Vous pouvez vérifier l'état des interfaces en sélectionnant l'option Interfaces dans le menu.</li>
-        </ol>
-      </li>
-      <li>
-        C'est tout pour ce tutoriel. Dans les tutoriels suivants, nous aborderons la configuration du serveur DHCP, du serveur DNS, du pare-feu, du VPN, etc.
-      </li>
-    </ol>
-  </li>
-</ol>
+ 
+	<section id="contenu">
+		<article class="news news-alone">
+	<header class="titre">
+		<h1><a href="https://www.provya.net/?d=2016/10/02/07/48/16-pfsense-configurer-un-cluster-de-2-pfsense-redondants-failover" title="Tutoriel sur la configuration d&#39;un cluster de serveurs pfSense (failover)">[pfSense] Configurer un cluster de 2 pfSense redondants (failover)</a></h1>
+		<h3 class="date"><img   src="./pfSense_files/icon_date.png" alt="icon" width="16" height="17"> 02/10/2019</h3>
+	</header>
+	<!--<p class="chapo">Tutoriel sur la configuration d'un cluster de serveurs pfSense (failover)</p>-->
+	<div class="contenu">
+		<em>English version</em>: <a href="https://www.provya.com/blog/pfsense-configuring-high-availability/">[pfSense] Configuring High Availability</a>.<br>
+<br>
+Dans cet article, nous allons voir comment configurer deux serveurs pfSense en mode cluster afin d'assurer un service en haute-disponibilité.<br>
+<br>
+Il est à noter que pfSense est l'une des rares solutions open-source offrant des techniques de haute-disponibilité permettant de garantir que le firewall ne puisse pas être un <a href="https://fr.wikipedia.org/wiki/Point_individuel_de_d%C3%A9faillance">point individuel de défaillance (SPOF)</a>.<br>
+<br>
+Dans cet article, nous nous baserons sur l'architecture suivante pour réaliser nos configurations&nbsp;:<br>
+<br>
+<div style="text-align:center;"><img   src="./pfSense_files/reseau-HA-pfSense-23.png" alt="Schéma réseau pfSense redondants" width="442" height="587"></div><br>
+<pre>pfSenseA - WAN : 172.25.46.101
+pfSenseB - WAN : 172.25.46.102
+@IP virtuelle - WAN : 172.25.46.100
 
-	  </div>
-      <div class="tab-pane fade" id="list-messages" role="tabpanel" aria-labelledby="list-messages-list">
-	  
-	  <ol>
-  <li>
-    Configuration de PfSense
-    <ul>
-      <li>
-        Prérequis
-        <ul>
-          <li>Une machine virtuelle VMware avec PfSense déjà installé et configuré comme détaillé dans le Tuto1.</li>
-        </ul>
-      </li>
-      <li>
-        Étapes
-        <ol>
-          <li>
-            Activation et configuration du serveur DHCP
-            <ol>
-              <li>Connectez-vous à l'interface web de PfSense à l'aide de l'adresse IP de l'interface LAN que vous avez configurée précédemment.</li>
-              <li>Allez à Services > DHCP Server.</li>
-              <li>Sélectionnez l'onglet correspondant à votre interface LAN.</li>
-              <li>Cochez la case Enable DHCP server on LAN interface.</li>
-              <li>Configurez la plage d'adresses IP que le serveur DHCP distribuera.</li>
-              <li>Cliquez sur Save.</li>
-            </ol>
-          </li>
-          <li>
-            Activation et configuration du serveur DNS
-            <ol>
-              <li>Allez à Services > DNS Resolver.</li>
-              <li>Cochez la case Enable DNS Resolver.</li>
-              <li>Configurez les paramètres selon vos besoins.</li>
-              <li>Cliquez sur Save.</li>
-            </ol>
-          </li>
-          <li>
-            Création d'un deuxième compte administrateur "backup"
-            <ol>
-              <li>Allez à System > User Manager.</li>
-              <li>Cliquez sur +Add.</li>
-              <li>Remplissez les champs du nouveau compte utilisateur : nom d'utilisateur "backup", mot de passe, et cochez la case Click to create a user certificate.</li>
-              <li>Sous le champ Group Membership, ajoutez l'utilisateur au groupe admins.</li>
-              <li>Cliquez sur Save.</li>
-            </ol>
-          </li>
-          <li>
-            Activation et configuration de l'accès SSH
-            <ol>
-              <li>Allez à System > Advanced.</li>
-              <li>Sélectionnez l'onglet Admin Access.</li>
-              <li>Sous Secure Shell, cochez Enable Secure Shell.</li>
-              <li>Cliquez sur Save.</li>
-            </ol>
-          </li>
-          <li>
-            Configuration de l'interface graphique en français
-            <ol>
-              <li>Allez à System > General Setup.</li>
-              <li>Sous Localization, sélectionnez Français pour Language.</li>
-              <li>Cliquez sur Save.</li>
-            </ol>
-          </li>
-          <li>
-            Configuration de l'accès à l'interface graphique depuis le WAN
-            <ol>
-              <li>Allez à Firewall > Rules.</li>
-              <li>Cliquez sur l'onglet WAN.</li>
-              <li>Cliquez sur Add pour ajouter une nouvelle règle.</li>
-              <li>Configurez la règle pour permettre l'accès à l'interface web de PfSense depuis le WAN.</li>
-              <li>Cliquez sur Save.</li>
-            </ol>
-          </li>
-        </ol>
-      </li>
-    </ul>
-  </li>
-  </ol>
-	  </div>
-      
-	  <div class="tab-pane fade" id="list-settings" role="tabpanel" aria-labelledby="list-settings-list">
-	  <ol>
-  <li>
-    Installation et configuration des postes et serveurs
-    <ul>
-      <li>
-        Prérequis
-        <ul>
-          <li>Une machine virtuelle VMware avec PfSense déjà installé et configuré comme détaillé dans le Tuto1 et Tuto2.</li>
-          <li>Les images ISO de Windows 10 et de la distribution Linux de votre choix.</li>
-        </ul>
-      </li>
-      <li>
-        Étapes
-        <ol>
-          <li>
-            Installation de Windows 10 sur les postes prévus
-            <ol>
-              <li>Dans VMware, créez une nouvelle machine virtuelle.</li>
-              <li>Sélectionnez l'image ISO de Windows 10 comme média d'installation.</li>
-              <li>Suivez les instructions à l'écran pour installer Windows 10.</li>
-              <li>Répétez ces étapes pour chaque poste Windows 10 requis.</li>
-            </ol>
-          </li>
-          <li>
-            Installation de Linux sur le poste prévu
-            <ol>
-              <li>Dans VMware, créez une nouvelle machine virtuelle.</li>
-              <li>Sélectionnez l'image ISO de la distribution Linux de votre choix comme média d'installation.</li>
-              <li>Suivez les instructions à l'écran pour installer Linux.</li>
-            </ol>
-          </li>
-          <li>
-            Installation et configuration du serveur web dans la DMZ
-            <ol>
-              <li>Créez une nouvelle machine virtuelle dans VMware pour le serveur web.</li>
-              <li>Installez un système d'exploitation de votre choix (par exemple, Linux).</li>
-              <li>Une fois le système d'exploitation installé, installez un serveur web (par exemple, Apache ou Nginx).</li>
-              <li>Configurez le serveur web selon vos besoins.</li>
-            </ol>
-          </li>
-          <li>
-            Installation et configuration du serveur de fichiers dans la DMZ
-            <ol>
-              <li>Créez une nouvelle machine virtuelle dans VMware pour le serveur de fichiers.</li>
-              <li>Installez un système d'exploitation de votre choix.</li>
-              <li>Une fois le système d'exploitation installé, installez un serveur de fichiers (par exemple, Samba pour le partage Windows et NFS pour le partage Linux).</li>
-              <li>Créez un partage NFS pour le poste Linux :</li>
-              <li>Installez le serveur NFS (sudo apt install nfs-kernel-server pour Ubuntu/Debian).</li>
-              <li>Créez un répertoire à partager (sudo mkdir /path/to/share).</li>
-              <li>Éditez le fichier /etc/exports pour ajouter votre partage (/path/to/share *(rw,sync,no_subtree_check)).</li>
-              <li>Lancez le serveur NFS (sudo systemctl start nfs-kernel-server).</li>
-              <li>Créez un partage avec un quota de 1 Go :</li>
-              <li>Installez le système de quotas (sudo apt install quota pour Ubuntu/Debian).</li>
-              <li>Éditez le fichier /etc/fstab pour activer les quotas sur le système de fichiers de votre choix.</li>
-              <li>Initialisez les quotas (sudo quotacheck -cug /path/to/filesystem).</li>
-              <li>Activez les quotas (sudo quotaon /path/to/filesystem).</li>
-              <li>Configurez le quota pour le répertoire partagé (sudo edquota -u user et définissez le quota à 1 Go).</li>
-            </ol>
-          </li>
-        </ol>
-      </li>
-    </ul>
-  </li>
-  <li>
-    C'est tout pour ce tutoriel. Dans les tutoriels suivants, nous aborderons la configuration des accès et règles de pare-feu, du VPN, etc.
-  </li>
-</ol>
+pfSenseA - LAN : 192.168.0.11
+pfSenseB - LAN : 192.168.0.12
+@IP virtuelle LAN : 192.168.0.10
+</pre>
+<br>
+<br>
+<br>
+<h2>Principe de fonctionnement</h2><br>
+pfSense communique sur les réseaux LAN &amp; WAN avec ses adresses IP virtuelles ; il n'utilise jamais l'adresse IP assignée à son interface.<br>
+En cas de défaillance de pfSenseA (pfSense primaire), pfSenseB (pfSense secondaire) prend le relais sans aucune interruption de service. La bascule de pfSenseA vers pfSenseB est totalement transparente.<br>
+<br>
+Afin d'assurer la réplication du serveur pfSenseA vers le serveur pfSenseB, 3 éléments doivent être configurés&nbsp;: CARP, pfsync et XML-RPC.<br>
+<br>
+<br>
+<h3>CARP</h3><br>
+CARP (<em>Common Address Redundancy Protocol</em>) est un protocole permettant à plusieurs hôtes présents sur un même réseau de partager une adresse IP.<br>
+<br>
+Ici, nous utilisons CARP afin de partager une adresse IP WAN et une adresse IP LAN sur nos serveurs pfSense.<br>
+C'est cette adresse IP <em>virtuelle</em> que pfSense va utiliser pour sa communication sur le réseau. Ainsi, en cas de défaillance du pfSense primaire (pfSenseA), le pfSense secondaire (pfSenseB) prendra le relais de manière transparente au niveau réseau (reprise de l'adresse IP virtuelle).<br>
+<br>
+<br>
+<h3>pfsync</h3><br>
+pfsync est un protocole permettant de synchroniser entre deux serveurs pfSense l'état des connexions en cours (et de manière plus large entre deux serveurs exécutant le firewall Packet Filter). Ainsi, en cas de défaillance du serveur primaire, l'état des connexions en cours est maintenu sur le serveur secondaire. Il n'y a donc pas de coupure liée à la bascule des services du pfSenseA vers le pfSenseB.<br>
+<br>
+Il est recommandé d'effectuer cette synchronisation sur un lien dédié entre les deux serveurs pfSense. À défaut, le lien LAN peut être utilisé.<br>
+La réplication peut se faire d'un serveur primaire vers un ou plusieurs autres serveur(s).<br>
+<br>
+<br>
+<h3>XML-RPC</h3><br>
+XML-RPC est un protocole permettant la réplication de données d'un serveur vers un autre. Il est utilisé dans pfSense afin de répliquer la configuration du serveur primaire vers le serveur secondaire.<br>
+Pour garantir son bon fonctionnement, il est important qu'il utilise la même interface que celle utilisée par le protocole pfsync.<br>
+<br>
+<br>
+<br>
+<h2>1. Configurer les adresses IP virtuelles</h2><br>
+Afin de fonctionner, chaque serveur pfSense doit disposer d'une adresse IP sur son interface, ainsi qu'une adresse IP virtuelle qui sera partagée entre les deux serveurs pfSense. De ce fait, nous utilisons 3 adresses IP par réseau.<br>
+<br>
+Pour configurer l'adresse IP virtuelle, se rendre dans "Firewall" &gt; "Virtual IPs"&nbsp;:<br>
+<br>
+<div style="text-align:center;"><img   src="./pfSense_files/Adresses_VIP-pfSense-23.png" alt="menu Firewall Virtual IPs sous pfSense - Provya" width="255" height="230"></div><br>
+<br>
+Cliquer sur l'icône "+ Add" pour ajouter une adresse IP virtuelle.<br>
+Les éléments à configurer sont les suivants&nbsp;:<br>
+<ul>
+<li> <span style="font-size:10pt;"><strong><u>Type</u></strong></span>&nbsp;: ici, nous avons quatre possibilités&nbsp;:</li></ul>
+<ol>
+<li> <strong>IP Alias</strong></li>
+<li> <strong>CARP</strong></li>
+<li> <strong>Proxy ARP</strong></li>
+<li> <strong>Other</strong></li></ol>
+ Nous choisissons "CARP". Nous ne rentrons pas ici dans le détail de l'usage de chaque option. Pour plus d'informations, nous vous invitons à lire l'article <a href="https://doc.pfsense.org/index.php/What_are_Virtual_IP_Addresses">What are Virtual IP Addresses - EN</a>.<br>
+<ul>
+<li> <strong><u>Interface</u></strong>&nbsp;: l'interface sur laquelle la VIP doit être configurée. Nous configurons la première sur l'interface WAN, puis la seconde sur l'interface LAN.</li>
+<li> <strong><u>Address(es)</u></strong>&nbsp;: l'adresse VIP et le masque du subnet de l'interface. Dans notre exemple&nbsp;: 172.25.46.100 et /24</li>
+<li> <strong><u>Virtual IP Password</u></strong>&nbsp;: mot de passe permettant de sécuriser les échanges au sein du groupe d'hôtes se partageant la VIP. Ce mot de passe devra être re-saisi sur le pfSense secondaire.</li>
+<li> <strong><u>VHID Group</u></strong>&nbsp;: Virtual Host Identifier. Un serveur peut faire parti de plusieurs groupes de VIP. Afin d'identifier chaque groupe, un ID unique lui est assigné. Nous laissons la valeur par défaut.</li>
+<li> <strong><u>Advertising Frequency</u></strong>&nbsp;: la valeur du champ "Skew" à 0 désigne le master (pfSense primaire). Une valeur plus élevée désignera l'esclave (pfSense de secours). La valeur de "Base" correspond au timeout en seconde au bout duquel l'hôte sera considéré comme inaccessible. Nous recommandons de laisser la valeur par défaut&nbsp;: 1.</li></ul>
+<br>
+Exemple de résultat obtenu&nbsp;:<br>
+<br>
+<div style="text-align:center;"><img   src="./pfSense_files/configuration-VIP-master-pfSense-23.png" alt="Configuration adresse IP virtuelle CARP pfSense" width="870" height="496"></div><br>
+<br>
+Nous procédons à la même configuration sur l'interface LAN.<br>
+Enfin, nous réalisons les mêmes configurations sur les interfaces WAN et LAN du serveur de secours (pfSenseB), en pensant bien à passer la valeur du champ "Skew" à 1.<br>
+<br>
+Nous pouvons vérifier l'état de nos adresses IP virtuelles depuis le menu "Status"&gt; "CARP (failover)"&nbsp;:<br>
+<br>
+<div style="text-align:center;"><img   src="./pfSense_files/menu-VIP-status-CARP-pfsense-23.png" alt="menu Status &gt; CARP (failover) - pfSense" width="270" height="132"></div><br>
+<br>
+<br>
+Dans le cas présent, les deux adresses VIP créées ont bien le statut "master" sur le pfSenseA&nbsp;:<br>
+<br>
+<div style="text-align:center;"><img   src="./pfSense_files/VIP-status-carp-pfSense-23.png" alt="Statut des adresses VIP pfSense" width="870" height="234"></div><br>
+<br>
+<br>
+<br>
+<h2>2. Forcer l'utilisation des adresses IP virtuelles</h2><br>
+Les adresses VIP sont déclarées, mais non-utilisées. Il reste à configurer pfSense pour qu'il utilise les adresses VIP plutôt que les adresses IP attribuées à ses interfaces logiques.<br>
+Pour cela, nous devons configurer pfSense pour qu'il utilise l'adresse VIP WAN sur le trafic sortant, l'adresse VIP LAN pour le trafic entrant et configurer les différents services pour qu'ils travaillent avec l'adresse VIP LAN comme adresse par défaut (pour les configuration OpenVPN ou DHCP, par exemple).<br>
+<br>
+<br>
+<h3>Configuration du NAT</h3><br>
+Nous allons dans le menu Firewall &gt; NAT. Dans l'onglet Outbound, nous cochons la case "Hybrid Outbound NAT rule generation. (Automatic Outbound NAT + rules below)".<br>
+Nous modifions les règles ou en ajoutons une afin que le trafic sortant utilise l'adresse VIP. Les champs à configurer sont les suivants&nbsp;:<br>
+<ol>
+<li> <strong>Disabled</strong>&nbsp;: cocher cette case pour désactiver la règle sans devoir la supprimer.</li>
+<li> <strong>Do not NAT</strong>&nbsp;: cocher cette case permet de désactiver le NAT pour le trafic correspondant à cette règle. Il est très rare de devoir cocher cette case.</li>
+<li> <strong>Interface</strong>&nbsp;: l'interface logique sur laquelle nous souhaitons définir notre règle de NAT. Dans notre cas, nous choisissons "WAN".</li>
+<li> <strong>Protocol</strong>&nbsp;: les protocoles concernés par cette règle de NAT. Nous choisissons "any"</li>
+<li> <strong>Source</strong>&nbsp;: le réseau source. Dans notre cas, il s'agit du réseau local, nous saisissons donc "192.168.0.0" et "/24" pour le masque.</li>
+<li> <strong>Destination</strong>&nbsp;: le réseau de destination. Dans notre cas, nous choisissons "any".</li>
+<li> <strong>Address</strong>&nbsp;: l'adresse à utiliser lors du NAT. Nous choisissons l'adresse VIP créée précédemment, soit "172.25.46.100 (VIP WAN)".</li>
+<li> <strong>Port</strong>&nbsp;: nous laissons ce champ vide.</li>
+<li> <strong>No XMLRPC Sync</strong>&nbsp;: cocher cette case pour ne pas copier la règle sur le pfSense secondaire. Nous laissons cette case non-cochée.</li>
+<li> <strong>Description</strong>&nbsp;: un champ informatif</li></ol>
+<br>
+Exemple de résultat obtenu&nbsp;:<br>
+<br>
+<div style="text-align:center;"><img   src="./pfSense_files/NAT-outbound-VIP-pfsense-23.png" alt="Configuration règle de NAT sortant" width="870" height="642"></div><br>
+<br>
+Cette configuration n'est à faire que sur le pfSense primaire. La configuration sera dupliquée automatiquement sur le pfSense secondaire.<br>
+<br>
+<br>
+<h3>Configuration du service DHCP</h3><br>
+Si pfSense fait office de serveur DHCP, nous allons dans le menu "Services" &gt; "DHCP Server". Nous modifions le champ "Gateway" pour y préciser l'adresse VIP (192.168.0.10). Autrement, le serveur DHCP de pfSense va continuer à indiquer aux clients du service DHCP l'adresse IP de l'interface LAN du pfSense.<br>
+Nous pouvons également compléter le champ "Failover peer IP" en renseignant l'adresse IP de l'interface LAN du pfSense secondaire (192.168.0.12). Cette configuration optionnelle permet de partager les leases DHCP entre le pfSense primaire et le pfSense secondaire.<br>
+Attention, si ce champ est renseigner, il est nécessaire de modifier la valeur du "skew" du pfSense secondaire pour le passer à un nombre supérieur à 20.<br>
+<br>
+Davantage d'informations sur la configuration du service DHCP&nbsp;: <a href="https://www.provya.net/index.php?d=2014/08/24/12/09/58-pfsense-configurer-son-serveur-dhcp">[pfSense] Configurer son serveur DHCP</a>.<br>
+<br>
+<br>
+<h3>Configuration du service OpenVPN server</h3><br>
+Si un serveur OpenVPN est configuré sur le pfSense, il est nécessaire de modifier l'interface d'écoute du service (normalement "WAN") pour la remplacer par l'adresse VIP (172.25.46.100).<br>
+Cette modification s'opère dans "VPN" &gt; "Servers".<br>
+<br>
+Davantage d'informations sur la configuration du service OpenVPN&nbsp;: <a href="https://www.provya.net/index.php?d=2014/06/15/15/20/04-pfsense-monter-un-acces-openvpn-site-a-site">[pfSense] Monter un accès OpenVPN site-à-site</a>.<br>
+<br>
+<br>
+<h3>Configuration du service VPN IPsec</h3><br>
+Si un tunnel IPsec est configuré sur le pfSense, il est nécessaire de modifier l'interface d'écoute du VPN IPsec (normalement "WAN") pour la remplacer par l'adresse VIP (172.25.46.100).<br>
+Cette modification s'opère dans "VPN" &gt; "IPsec". La modification s'effectue sur la phase 1.<br>
+<br>
+Davantage d'informations sur la configuration du service VPN IPsec&nbsp;: <a href="https://www.provya.net/?d=2020/02/11/08/22/01-pfsense-configurer-un-vpn-ipsec-site-a-site">[pfSense] Configurer un VPN IPsec site à site</a>.<br>
+<br>
+<br>
+<br>
+<h2>3. Configurer la haute-disponibilité</h2><br>
+Il nous reste à configurer la haute-disponibilité. Pour cela, se rendre dans "System" &gt; "High Avail. Sync"&nbsp;:<br>
+<br>
+<div style="text-align:center;"><img   src="./pfSense_files/haute-dispo-pfsense-23.png" alt="menu System &gt; High Avail. Sync - pfSense" width="208" height="178"></div><br>
+<br>
+Depuis cette page, il y a 2 éléments à configurer&nbsp;: la partie pfsync (pour la synchronisation d'état) et XMLRPC Sync (pour la synchronisation de la configuration).<br>
+<br>
+<br>
+<h3>State Synchronization Settings (pfsync)</h3><br>
+Les éléments à configurer sont les suivants&nbsp;:<br>
+<ul>
+<li> <strong><u>Synchronize States</u></strong>&nbsp;: cocher cette case pour activer pfsync (cette configuration est à faire sur le pfSense primaire <strong>et</strong> sur le pfSense secondaire)</li>
+<li> <strong><u>Synchronize Interface</u></strong>&nbsp;: l'interface de synchronisation. Si nous disposons d'une interface dédiée à la synchronisation, nous la choisissons ; autrement, nous choisissons "LAN".</li>
+<li> <strong><u>pfsync Synchronize Peer IP</u></strong>&nbsp;: sur le pfSense primaire, saisir l'adresse IP du serveur pfSense de secours (192.168.0.12). Si pour le choix de l'interface (ci-dessus) nous avons choisi "LAN", nous indiquons l'adresse IP de l'interface LAN du pfSense secondaire (192.168.0.12) ; si nous avons choisi une interface dédiée alors nous indiquons l'adresse IP de l'interface dédiée du pfSense secondaire. Par défaut, si aucune adresse IP n'est saisie, pfSense diffusera en multicast sur l'interface choisie préalablement. Sur le pfSense secondaire, on indique l'adresse IP du pfSense primaire (192.168.0.11)</li></ul>
+<br>
+<br>
+<h3>Configuration Synchronization Settings (XMLRPC Sync)</h3><br>
+<ul>
+<li> <strong><u>Synchronize Config to IP</u></strong>&nbsp;: sur le serveur <strong>pfSense primaire</strong>, saisir l'adresse IP du serveur pfSense secondaire (comme précédemment, il faut saisir l'adresse IP de l'interface choisie). <strong>Ce doit être la même adresse IP que celle renseignée dans le champ "pfsync Synchronize Peer IP"</strong>. Ce champ doit être laissé vide sur le serveur <strong>pfSense secondaire</strong>.</li>
+<li> <strong><u>Remote System Username</u></strong>&nbsp;: sur le serveur <strong>pfSense primaire</strong>, saisir le nom d'utilisateur utilisé pour se connecter sur le WebGUI du pfSense de secours ("admin" par défaut). Ce champ doit être laissé vide sur le serveur <strong>pfSense de secours</strong>.</li>
+<li> <strong><u>Remote System Password</u></strong>&nbsp;: sur le serveur <strong>pfSense primaire</strong>, saisir le mot de passe du compte utilisateur saisi ci-dessus. Ce champ doit être laissé vide sur le serveur <strong>pfSense de secours</strong>.</li></ul>
+<br>
+Puis, nous choisissons les services que nous souhaitons synchroniser en cochant les cases appropriées. Par défaut, nous recommandons de tout cocher (<em>Toggle All</em>).<br>
+<br>
+Exemple de résultat obtenu&nbsp;:<br>
+<br>
+<div style="text-align:center;"><img   src="./pfSense_files/configuration-pfsync-XMLRPC-pfsense-23.png" alt="Configuration de la haute-disponibilité sous pfSense" width="870" height="990"></div><br>
+<br>
+<br>
+<h3>Autoriser les flux de réplication au niveau des règles du firewall</h3><br>
+Il nous reste à autoriser les flux de réplications sur les firewall. La configuration se passe dans "Firewall" &gt; "Rules".<br>
+Si la réplication se fait via l'interface LAN, les règles de firewall sont à appliquer sur cette interface ; si nous utilisons une interface dédiée, les règles seront à appliquer sur celle-ci.<br>
+<br>
+Il y a deux flux réseau à autoriser&nbsp;:<br>
+<ul>
+<li> le flux pour la synchronisation XML-RPC qui s'effectue via le port 443</li>
+<li> le flux pour la synchronisation du protocole pfsync</li></ul>
+<br>
+Sur le firewall primaire, nous créons donc une première règle de firewall (en cliquant sur le bouton "Add") avec les paramètres suivants&nbsp;:<br>
+<ul>
+<li> <strong><u>Action</u></strong>&nbsp;: nous choisissons "Pass"</li>
+<li> <strong><u>Interface</u></strong>&nbsp;: nous choisissons l'interface dédiée à la réplication si le pfSense en possède une. Autrement, nous choisissons "LAN"</li>
+<li> <strong><u>Address Family</u></strong>&nbsp;: nous laissons "IPv4"</li>
+<li> <strong><u>Protocol</u></strong>&nbsp;: nous choisissons "TCP"</li>
+<li> <strong><u>Source</u></strong>&nbsp;: nous indiquons un alias qui contiendra les adresses IP des interfaces de synchronisation de chaque pfSense (dans notre cas, cet alias contiendra les adresses IP "192.168.0.11" et "192.168.0.12"). Si cette notion d'alias n'est pas claire pour vous, vous pouvez consulter notre article dédié <a href="https://www.provya.net/?d=2019/11/05/10/02/58-pfsense-tout-comprendre-aux-alias">[pfSense] Tout comprendre aux alias</a>, ou vous pouvez choisir l'ensemble du réseau rattaché à l'interface de synchronisation (dans notre cas, ce serait "LAN net")</li>
+<li> <strong><u>Destination</u></strong>&nbsp;: nous choisissons "This firewall (self)"</li>
+<li> <strong><u>Destination port range</u></strong>&nbsp;: choisir "HTTPS (443)"</li></ul>
+<br>
+Exemple de résultat obtenu&nbsp;:<br>
+<br>
+<div style="text-align:center;"><img   src="./pfSense_files/config-firewall-ha-replication-pfsense-23.png" alt="Règle de firewall autorisant la réplication" width="870" height="797"></div><br>
+<br>
+Sur le firewall primaire toujours, nous créons une seconde règle de firewall avec les paramètres suivants&nbsp;:<br>
+<ul>
+<li> <strong><u>Action</u></strong>&nbsp;: nous choisissons "Pass"</li>
+<li> <strong><u>Interface</u></strong>&nbsp;: nous choisissons l'interface dédiée à la réplication si le pfSense en possède une. Autrement, nous choisissons "LAN"</li>
+<li> <strong><u>Address Family</u></strong>&nbsp;: nous laissons "IPv4"</li>
+<li> <strong><u>Protocol</u></strong>&nbsp;: nous choisissons "PFSYNC"</li>
+<li> <strong><u>Source</u></strong>&nbsp;: nous indiquons un alias qui contiendra les adresses IP des interfaces de synchronisation de chaque pfSense (dans notre cas, cet alias contiendra les adresses IP "192.168.0.11" et "192.168.0.12"). Si cette notion d'alias n'est pas claire pour vous, vous pouvez choisir l'ensemble du réseau rattaché à l'interface de synchronisation (dans notre cas, ce serait "LAN net")</li>
+<li> <strong><u>Destination</u></strong>&nbsp;: nous choisissons "This firewall (self)"</li></ul>
+<br>
+Exemple de résultat obtenu&nbsp;:<br>
+<br>
+<div style="text-align:center;"><img   src="./pfSense_files/config-firewall-ha-pfsync-replication-pfsense-23.png" alt="Règle de firewall autorisant le protocole pfsync" width="870" height="687"></div><br>
+<br>
+Ces deux règles de firewall ont été répliquées automatiquement sur le pfSense secondaire.<br>
+<br>
+<br>
+<br>
+<h2>4. Vérifier le bon fonctionnement de la haute-disponibilité</h2><br>
+L'ensemble doit, à ce stade, être opérationnel. Vérifions&nbsp;!<br>
+<br>
+<br>
+<h3>Vérifier le statut du CARP (adresse VIP)</h3><br>
+Nous pouvons vérifier l'état de nos adresses IP virtuelles depuis le menu "Status"&gt; "CARP (failover)"&nbsp;:<br>
+<br>
+<div style="text-align:center;"><img   src="./pfSense_files/menu-VIP-status-CARP-pfsense-23.png" alt="menu Status &gt; CARP (failover)" width="270" height="132"></div><br>
+<br>
+Les adresses VIP doivent avoir le statut "MASTER" sur le pfSense primaire et "BACKUP" sur le pfSense secondaire.<br>
+<br>
+<br>
+<h3>Vérifier la réplication</h3><br>
+Nous pouvons naviguer dans le menu "Firewall" &gt; "Rules" et "Firewall" &gt; "NAT" et vérifier que les règles créées sur le pfSense primaire sont bien présentes également sur le pfSense secondaire.<br>
+<br>
+<br>
+<h3>Faire des tests&nbsp;!</h3><br>
+Avant toute chose, à ce stade, il est important de faire une sauvegarde de vos serveurs pfSense ("Diagnostics" &gt; "Backup &amp; Restore").<br>
+<br>
+Ensuite, pour tester le bon fonctionnement de la haute-disponibilité, plusieurs tests peuvent être réalisés. En voici quelques exemples&nbsp;:<br>
+<ul>
+<li> arrêter le pfSense primaire</li>
+<li> débrancher le câble réseau de l'interface LAN ou WAN du pfSense primaire</li>
+<li> désactiver le service CARP sur le pfSense primaire ("Status" &gt; "CARP (failover)")</li>
+<li> télécharger un fichier ou lancer des requêtes ping lors de la bascule du primaire vers le secondaire</li></ul>
+<br>
+<br>
+<br>
+<h3>Pour aller plus loin</h3><br>
+<a href="https://www.provya.net/index.php?d=2015/01/13/13/31/57-pfsense-comprendre-la-gestion-des-interfaces-reseaux">[pfSense] Comprendre la gestion des interfaces réseaux</a><br>
+<a href="https://www.provya.net/index.php?d=2014/08/24/12/09/58-pfsense-configurer-son-serveur-dhcp">[pfSense] Configurer son serveur DHCP</a><br>
+<a href="https://www.provya.net/?d=2019/11/05/10/02/58-pfsense-tout-comprendre-aux-alias">[pfSense] Tout comprendre aux alias</a><br>
+<a href="https://www.provya.net/index.php?d=2014/09/04/14/45/52-pfsense-mettre-a-jour-son-serveur-pfsense">[pfSense] Mettre à jour son serveur pfSense</a><br>
+<a href="https://www.provya.net/index.php?d=2014/06/15/15/20/04-pfsense-monter-un-acces-openvpn-site-a-site">[pfSense] Monter un accès OpenVPN site-à-site</a><br>
+<a href="https://www.provya.net/?d=2017/11/24/11/31/31-pfsense-configurer-un-dual-wan-plusieurs-connexions-internet">[pfSense] Configurer un dual-WAN (plusieurs connexions Internet)</a><br>
+<a href="https://www.provya.net/index.php?liste">Tous nos articles classés par thème</a><br>
+<a href="https://www.provya.net/index.php?random">Voir un article au hasard</a><br>
+<br>
+<br>
+ 
+<script>
+/* Tag script found at : http://www.siteduzero.com/tutoriel-3-34703-insertion-de-balises-dans-une-zone-de-texte.html */
+function insertTag(startTag, endTag, tag, tagType) {
+	var field = document.getElementById(tag);
+	var scroll = field.scrollTop;
+	field.focus();
 
-	  </div>
-     
-	   <div class="tab-pane fade" id="list-settings1" role="tabpanel" aria-labelledby="list-settings1-list">
-	<ol>
-  <li>
-    Accéder à l'interface Web de PfSense
-    <ol>
-      <li>Depuis un poste sur le réseau LAN, ouvrez un navigateur Web et entrez l'adresse IP de l'interface LAN de PfSense. Par défaut, l'adresse est http://192.168.1.1.</li>
-      <li>Connectez-vous à l'aide du nom d'utilisateur admin et du mot de passe que vous avez défini lors de la configuration initiale de PfSense.</li>
-    </ol>
-  </li>
-  <li>
-    Accéder à la page de gestion des règles de pare-feu
-    <ol>
-      <li>Dans l'interface Web de PfSense, naviguez vers Firewall > Rules.</li>
-      <li>Cliquez sur l'onglet LAN pour gérer les règles de pare-feu pour l'interface LAN.</li>
-    </ol>
-  </li>
-  <li>
-    Créer une règle pour permettre l'accès au partage de fichiers
-    <ol>
-      <li>Cliquez sur Add pour ajouter une nouvelle règle.</li>
-      <li>Sous Action, sélectionnez Pass pour permettre le trafic qui correspond à cette règle.</li>
-      <li>Sous Interface, assurez-vous que LAN est sélectionné.</li>
-      <li>Sous Address Family, sélectionnez IPv4.</li>
-      <li>Sous Protocol, sélectionnez TCP.</li>
-      <li>Sous Source, assurez-vous que LAN net est sélectionné.</li>
-      <li>Sous Destination, cliquez sur Single host or alias et entrez l'adresse IP de votre serveur de fichiers dans la DMZ.</li>
-      <li>Sous Destination port range, sélectionnez le port utilisé par votre serveur de fichiers pour le partage de fichiers.</li>
-      <li>Sous Description, entrez une description pour la règle.</li>
-      <li>Cliquez sur Save pour enregistrer la règle.</li>
-      <li>Cliquez sur Apply changes pour appliquer la nouvelle règle.</li>
-    </ol>
-  </li>
-</ol>
+	if (window.ActiveXObject) { // C'est IE
+		var textRange = document.selection.createRange();            
+		var currentSelection = textRange.text;
 
-	</div>
-  
-  
-       <div class="tab-pane fade" id="list-settings2" role="tabpanel" aria-labelledby="list-settings2-list">
-  <ol>
-  <li>
-    Installation du paquet OpenVPN
-    <ol>
-      <li>Connectez-vous à l'interface Web de PfSense (par défaut http://192.168.1.1) avec le nom d'utilisateur admin et le mot de passe que vous avez défini.</li>
-      <li>Naviguez vers System > Package Manager.</li>
-      <li>Allez dans l'onglet Available Packages.</li>
-      <li>Recherchez "openvpn-client-export" et cliquez sur Install à côté. Cela installera OpenVPN et un outil utile pour exporter les configurations client.</li>
-    </ol>
-  </li>
-  <li>
-    Configuration d'OpenVPN
-    <ol>
-      <li>Naviguez vers VPN > OpenVPN.</li>
-      <li>Allez dans l'onglet Wizards.</li>
-      <li>Sélectionnez le type de serveur Local User Access puis cliquez sur Next.</li>
-      <li>Pour Certificate Authority, cliquez sur +Add New CA et remplissez les informations requises, puis cliquez sur Save.</li>
-      <li>Pour Server Certificate, cliquez sur +Add New Cert et remplissez les informations requises, puis cliquez sur Save.</li>
-      <li>Dans la configuration du serveur VPN, sélectionnez WAN pour l'interface, UDP on IPv4 only pour le protocole, choisissez un port pour le service (par défaut 1194), et pour TLS Configuration, cochez Use a TLS Key.</li>
-      <li>Continuez à configurer selon vos besoins, puis cliquez sur Next.</li>
-      <li>Ajoutez un utilisateur local pour le VPN, puis cliquez sur Next et Finish.</li>
-    </ol>
-  </li>
-  <li>
-    Configuration des règles de pare-feu pour le VPN
-    <ol>
-      <li>Naviguez vers Firewall > Rules.</li>
-      <li>Allez dans l'onglet WAN.</li>
-      <li>Cliquez sur Add pour ajouter une nouvelle règle.</li>
-      <li>Configurez la règle selon les spécifications, puis cliquez sur Save et Apply Changes.</li>
-    </ol>
-  </li>
-  <li>
-    Exportation de la configuration client OpenVPN
-    <ol>
-      <li>Naviguez vers VPN > OpenVPN.</li>
-      <li>Allez dans l'onglet Client Export.</li>
-      <li>Trouvez le nom d'utilisateur que vous avez créé pour le VPN et téléchargez le fichier de configuration.</li>
-    </ol>
-  </li>
-</ol>
-  </div>
+		textRange.text = startTag + currentSelection + endTag;
+		textRange.moveStart("character", -endTag.length - currentSelection.length);
+		textRange.moveEnd("character", -endTag.length);
+		textRange.select();     
+	} else { // c'est pas IE.
+		var startSelection   = field.value.substring(0, field.selectionStart);
+		var currentSelection = field.value.substring(field.selectionStart, field.selectionEnd);
+		var endSelection     = field.value.substring(field.selectionEnd);
+		if (currentSelection == "") { currentSelection = "TEXTE"; }
+		field.value = startSelection + startTag + currentSelection + endTag + endSelection;
+		field.focus();
+		field.setSelectionRange(startSelection.length + startTag.length, startSelection.length + startTag.length + currentSelection.length);
+	}
+	field.scrollTop = scroll;
+}
 
-        <div class="tab-pane fade" id="list-settings3" role="tabpanel" aria-labelledby="list-settings3-list">
-  
-  <ol>
-  <li>
-    Génération d'une paire de clés avec PowerShell pour le compte "admin"
-    <ol>
-      <li>Ouvrez PowerShell et entrez la commande suivante pour générer une paire de clés RSA :</li>
-      <pre>ssh-keygen -t rsa</pre>
-      <li>Lorsqu'on vous demande d'entrer un fichier dans lequel sauvegarder la clé, vous pouvez appuyer sur Enter pour accepter le chemin par défaut (C:\Users\YourUserName\.ssh\id_rsa).</li>
-      <li>Vous serez ensuite invité à entrer une passphrase. Vous pouvez choisir d'entrer une passphrase pour plus de sécurité ou laisser le champ vide pour ne pas en avoir.</li>
-      <li>Une fois la clé générée, vous pouvez afficher la clé publique avec la commande suivante :</li>
-      <pre>Get-Content C:\Users\YourUserName\.ssh\id_rsa.pub</pre>
-    </ol>
-  </li>
-  <li>
-    Génération d'une paire de clés avec PuTTY pour le compte "backup"
-    <ol>
-      <li>Ouvrez PuTTYgen (généralement installé avec PuTTY).</li>
-      <li>Sélectionnez RSA comme type de clé à générer.</li>
-      <li>Cliquez sur Generate et suivez les instructions pour générer la clé.</li>
-      <li>Une fois la clé générée, vous pouvez entrer une passphrase facultative dans le champ Key passphrase pour plus de sécurité.</li>
-      <li>Cliquez sur Save public key et Save private key pour sauvegarder vos clés.</li>
-      <li>Copiez le contenu de la zone "Public key for pasting into OpenSSH authorized_keys file" - c'est votre clé publique.</li>
-    </ol>
-  </li>
-  <li>
-    Association des clés avec les comptes correspondants sur PfSense
-    <ol>
-      <li>Connectez-vous à l'interface Web de PfSense.</li>
-      <li>Naviguez vers System > User Manager.</li>
-      <li>Cliquez sur le nom d'utilisateur admin, puis sur Edit.</li>
-      <li>Faites défiler jusqu'à SSH Key et collez votre clé publique générée avec PowerShell dans la zone de texte, puis cliquez sur Save.</li>
-      <li>Répétez la même opération pour le compte backup, en utilisant la clé publique générée avec PuTTY.</li>
-    </ol>
-  </li>
-</ol>
+function reply(code) {
+	var field = document.getElementById('form-commentaire').getElementsByTagName('textarea')[0];
+	field.focus();
+	if (field.value !== '') {
+		field.value += '\n\n';
+	}
+	field.value += code;
+	field.scrollTop = 10000;
+	field.focus();
+}
 
-  </div>
+function resize(id, dht) {
+	var elem = document.getElementById(id);
+	var ht = elem.offsetHeight;
+	size = Number(ht)+Number(dht);
+	elem.style.height = size+"px";
+	return false;
+}
 
 
+/* Script provenant d'ici : http://www.tiger-222.fr/?d=2016/10/18/14/00/25-scrollbar-horizontale */
+/* Calcul de votre progression sur la page
+   et modification de la longueur de la scroll bar */
+function scroll_bar() {
+    'use strict';
+    var t = document.querySelector('#scroll-bar'),
+        a = document.body.clientHeight,
+        n = window.innerHeight,
+        g = window.pageYOffset,
+        o = g / (a - n) * 100;
 
- <div class="tab-pane fade" id="list-settings4" role="tabpanel" aria-labelledby="list-settings4-list">
-	<ol>
-  <li>
-    Vérification de la configuration et des règles de pare-feu
-    <ol>
-      <li>Connectez-vous à l'interface Web de PfSense.</li>
-      <li>Naviguez vers Firewall > Rules.</li>
-      <li>Vérifiez que les règles de pare-feu pour les interfaces WAN, LAN et DMZ sont correctement configurées selon vos besoins. Les règles doivent permettre l'accès aux services et partages de fichiers, ainsi que l'accès VPN.</li>
-    </ol>
-  </li>
-  <li>
-    Tests d'accès et de fonctionnement des services et partages de fichiers
-    <ol>
-      <li>Depuis le poste Windows 10, tentez d'accéder au partage de fichiers sur le serveur dans la DMZ. Si vous ne pouvez pas y accéder, vérifiez la configuration du serveur de fichiers et les règles de pare-feu.</li>
-      <li>Depuis le poste Linux, tentez d'accéder au partage NFS sur le serveur dans la DMZ. Si vous ne pouvez pas y accéder, vérifiez la configuration du serveur de fichiers et les règles de pare-feu.</li>
-      <li>Depuis un poste sur le réseau WAN, tentez d'accéder au serveur Web dans la DMZ. Si vous ne pouvez pas y accéder, vérifiez la configuration du serveur Web et les règles de pare-feu.</li>
-    </ol>
-  </li>
-  <li>
-    Tests de connectivité et de performance du VPN
-    <ol>
-      <li>Configurez un client OpenVPN sur un poste externe avec le fichier de configuration exporté précédemment.</li>
-      <li>Tentez de vous connecter au VPN. Si vous ne pouvez pas vous connecter, vérifiez la configuration d'OpenVPN et les règles de pare-feu.</li>
-      <li>Une fois connecté au VPN, tentez d'accéder au réseau LAN de PfSense. Vous devriez être en mesure d'accéder aux postes et aux serveurs sur le réseau LAN.</li>
-      <li>Testez la performance du VPN en transférant des fichiers entre le poste VPN et les postes sur le réseau LAN. Vous pouvez utiliser un outil comme iperf pour cela.</li>
-    </ol>
-  </li>
-</ol>
-		</div>
-</div>
+    t.style.width = o + '%';
+}
 
-</div>
-</div>
-   <!-- Optional JavaScript -->
-    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
-  </body>
-</html>
+// Appel de la fonction lorsque la page est chargée
+window.addEventListener('load', scroll_bar);
+
+/* Appel de la fonction lors d'un mouvement sur la page
+   (scroll, mollette de la souris, flèches de direction, etc.) */
+window.addEventListener('scroll', scroll_bar);
+</script>
+
+
+
+ </body></html>
