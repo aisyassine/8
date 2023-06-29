@@ -1170,6 +1170,30 @@
                                     </div>
                                 </div>
                             </li>
+							
+							<li>
+                                <div style="display: flex;">
+                                    <div style="flex: 0 0 20px; margin-top: 23px; margin-right:10px; "> <img
+                                            style="width: 30px; height: 30px; " src="365.png"> </div>
+                                    <div style="flex: 1;">
+                                        <label for="365" style=" font-size: 1.5em;">OFFICE 365</label>
+                                        <input type="checkbox" id="365" />
+                                        <div class="content">
+
+                                            <ul class="el">
+                                                 <li>
+                                                    <a class="name" href="#" data-src="https://m365maps.com/">
+                                                        Microsoft 365 Licensing
+                                                    </a>
+                                                </li>
+                                                
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+							
+							
 
 
 
@@ -1237,6 +1261,21 @@
                     event.preventDefault();
                     const src = this.getAttribute('data-src');
                     const type = this.getAttribute('data-type');
+					
+					
+					
+					if (src === "https://m365maps.com/") {
+						document.getElementById('frame').style.paddingTop = "160px";
+					}
+					else {
+					document.getElementById('frame').style.paddingTop = "0px";
+					}
+					
+
+
+
+
+
 
 
                     if (type === 'pdf') {

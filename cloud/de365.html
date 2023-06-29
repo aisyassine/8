@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Configurer le Self-Service Password Reset</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+        h1 {
+            background-color: #1E90FF;
+            color: white;
+            padding: 10px 0;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        h2 {
+            color: #1E90FF;
+        }
+        ul {
+            margin-left: 20px;
+        }
+        .container {
+            width: 80%;
+            margin: 0 auto;
+        }
+        .step {
+            margin-bottom: 15px;
+        }
+        .sub-step {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Configurer le Self-Service Password Reset</h1>
+    <div class="container">
+        <div class="step">
+            <h2>1. Activez la réinitialisation du mot de passe en libre-service (SSPR):</h2>
+            <ul>
+                <li>Connectez-vous au portail Azure à l'adresse https://portal.azure.com en utilisant un compte avec des droits d'administrateur globale.</li>
+                <li>Dans le menu de gauche, sélectionnez "Azure Active Directory", puis "Password reset".</li>
+                <li>Dans la fenêtre principale, sélectionnez "All" pour activer la SSPR pour tous les utilisateurs, puis cliquez sur "Save".</li>
+            </ul>
+        </div>
+        <div class="step">
+            <h2>2. Configurez les méthodes d'authentification pour la SSPR:</h2>
+            <ul>
+                <li>Toujours dans les paramètres de "Password reset", sélectionnez "Authentication methods".</li>
+                <li>Choisissez le nombre de méthodes à utiliser pour réinitialiser le mot de passe et les méthodes spécifiques que les utilisateurs peuvent utiliser (par exemple, adresse e-mail, téléphone, question de sécurité).</li>
+                <li>Cliquez sur "Save" pour enregistrer vos modifications.</li>
+				<img src="1.png" style="width: 75%;">
+            </ul>
+			
+        </div>
+        <div class="step">
+            <h2>3. Activez la réécriture de mot de passe pour synchroniser les mots de passe réinitialisés avec votre Active Directory local:</h2>
+            <ul>
+                <li>Sur votre serveur Active Directory, ouvrez Azure AD Connect.</li>
+                <li>Sélectionnez "Configure" à côté de "Customize Synchronization Options" et cliquez sur "Next".</li>
+                <li>Connectez-vous à votre Azure AD en utilisant des informations d'identification d'administrateur.</li>
+                <li>Sur la page "Optional Features", cochez la case "Password writeback" et cliquez sur "Next".</li>
+                <li>Cliquez sur "Configure" et une fois la configuration terminée, cliquez sur "Exit".</li>
+				<img src="2.png" style="width: 75%;">
+				<img src="3.png" style="width: 75%;">
+				
+            </ul>
+        </div>
+        <div class="step">
+            <h2>4. Vérifiez que la réécriture de mot de passe est activée:</h2>
+            <ul>
+                <li>Retournez au portail Azure et dans Azure Active Directory, sélectionnez "Azure AD Connect".</li>
+                <li>Vérifiez que "Password writeback" est indiqué comme "Enabled".</li>
+            </ul>
+        </div>
+        <div class="step">
+            <h2>Note:</h2>
+            <p>Assurez-vous que vos utilisateurs ont enregistré au moins une méthode d'authentification pour SSPR, sinon ils ne pourront pas réinitialiser leur mot de passe.</p>
+            <p>Pour plus d'informations sur ces fonctionnalités, consultez la <a href="https://docs.microsoft.com/en-us/azure/active-directory/authentication/tutorial-enable-sspr">documentation officielle de Microsoft</a>.</p>
+        </div>
+    </div>
+</body>
+</html>
