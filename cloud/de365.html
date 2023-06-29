@@ -101,6 +101,25 @@
         </div>
 		
 		
+		<div class="step">
+            <h2>Configurer une solution Just In Time :</h2>
+            <p>Les techniciens de l’entreprise doivent demander une élévation de privilèges pour obtenir le droit Admin Users avec une validation par un Administrateur général.</p>
+            <ul>
+                <li>Dans le menu de gauche, sélectionnez "Azure Active Directory", puis "Privileged Identity Management".</li>
+                <li>Sous "Manage", sélectionnez "Azure AD roles".</li>
+                <li>Sélectionnez "Role settings" et cliquez sur "+ New settings".</li>
+                <li>Configurez les paramètres selon vos besoins. Vous pouvez définir la durée de l'activation du rôle, l'approbation requise pour l'activation, les notifications, etc.</li>
+                <li>Cliquez sur "Create" pour créer les paramètres.</li>
+                <li>Revenez à "Azure AD roles" et sélectionnez "+ Add assignments".</li>
+                <li>Sélectionnez le rôle que vous souhaitez gérer avec PIM (dans votre cas, il s'agirait probablement du rôle "User administrator").</li>
+                <li>Sélectionnez les membres que vous souhaitez ajouter à ce rôle et cliquez sur "Next".</li>
+                <li>Sélectionnez les paramètres que vous avez créés précédemment et cliquez sur "Next".</li>
+                <li>Vérifiez les informations et cliquez sur "Assign" pour attribuer le rôle.</li>
+            </ul>
+        </div>
+		
+		
+		
     </div>
 </body>
 </html>
