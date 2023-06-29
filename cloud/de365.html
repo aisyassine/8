@@ -36,12 +36,12 @@
     </style>
 </head>
 <body>
-    <h1>Configurer le Self-Service Password Reset</h1>
+    <h1> DP 365 </h1>
     <div class="container">
         <div class="step">
             <h2>1. Activez la réinitialisation du mot de passe en libre-service (SSPR):</h2>
             <ul>
-                <li>Connectez-vous au portail Azure à l'adresse https://portal.azure.com en utilisant un compte avec des droits d'administrateur globale.</li>
+                <li>Connectez-vous au portail Azure à l'adresse https://entra.microsoft.com/#view/Microsoft_AAD_ConditionalAccess/ConditionalAccessBlade/~/NamedLocations?Microsoft_AAD_IAM_legacyAADRedirect=true  en utilisant un compte avec des droits d'administrateur globale.</li>
                 <li>Dans le menu de gauche, sélectionnez "Azure Active Directory", puis "Password reset".</li>
                 <li>Dans la fenêtre principale, sélectionnez "All" pour activer la SSPR pour tous les utilisateurs, puis cliquez sur "Save".</li>
             </ul>
@@ -81,6 +81,26 @@
             <p>Assurez-vous que vos utilisateurs ont enregistré au moins une méthode d'authentification pour SSPR, sinon ils ne pourront pas réinitialiser leur mot de passe.</p>
             <p>Pour plus d'informations sur ces fonctionnalités, consultez la <a href="https://docs.microsoft.com/en-us/azure/active-directory/authentication/tutorial-enable-sspr">documentation officielle de Microsoft</a>.</p>
         </div>
+		
+		
+		
+		<div class="step">
+            <h2>Accès conditionnel : Il est interdit de se connecter en dehors de la France.</h2>
+            <ul>
+                
+                <li>Dans le menu de gauche, sélectionnez "Azure Active Directory", puis "Security", et enfin "Conditional Access".</li>
+                <li>Cliquez sur "+ New policy" pour créer une nouvelle politique.</li>
+                <li>Donnez un nom à votre politique, par exemple "Seulement en France".</li>
+                <li>Dans l'onglet "Users and groups", sélectionnez "All users" ou spécifiez les utilisateurs et groupes auxquels cette politique doit s'appliquer.</li>
+                <li>Dans l'onglet "Cloud apps or actions", sélectionnez "All cloud apps" ou spécifiez les applications pour lesquelles cette politique doit s'appliquer.</li>
+                <li>Dans l'onglet "Conditions", sélectionnez "Locations". Sous "Include", sélectionnez "Any location". Sous "Exclude", sélectionnez "Selected locations" et ajoutez la France.</li>
+                <li>Dans l'onglet "Access controls", sélectionnez "Block access".</li>
+                <li>Enfin, dans l'onglet "Enable policy", sélectionnez "On" et cliquez sur "Create" pour créer la politique.</li>
+				<img src="4.png" style="width: 75%;">
+            </ul>
+        </div>
+		
+		
     </div>
 </body>
 </html>
