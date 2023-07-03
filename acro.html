@@ -43,6 +43,11 @@ input[type="text"] {
   border: 2px solid #ccc;
 }
 
+mark {
+  background-color: yellow;
+  color: black;
+}
+
 
 </style>
 </head>
@@ -377,7 +382,13 @@ for (let i = 0; i < acronyms.length; i++) {
     previousAcronym = currentAcronym;
   }
 }
-function updateContent(filteredAcronyms) {
+
+function highlight(text, searchQuery) {
+  const regex = new RegExp(searchQuery, 'gi');
+  return text.replace(regex, match => `<mark>${match}</mark>`);
+}
+
+function updateContent(filteredAcronyms, searchQuery = '') {
   let formattedContent = '';
 
   for (let i = 0; i < filteredAcronyms.length; i++) {
@@ -386,8 +397,10 @@ function updateContent(filteredAcronyms) {
 
     const hyperlink = `<a href="#" data-url="https://en.wikipedia.org/wiki/${acronym}">${acronym}</a>`;
     const formattedLine = acronymData[0].replace(acronym, hyperlink);
+    const formattedLineHighlighted = searchQuery ? highlight(formattedLine, searchQuery) : formattedLine;
+    const definitionHighlighted = searchQuery ? highlight(acronymData[1], searchQuery) : acronymData[1];
 
-    formattedContent += formattedLine + '<br>' + acronymData[1] + '<br><br>';
+    formattedContent += formattedLineHighlighted + '<br>' + definitionHighlighted + '<br><br>';
   }
 
   document.getElementById('content').innerHTML = formattedContent;
@@ -413,7 +426,7 @@ document.getElementById('search').addEventListener('input', function() {
            acronymData[1].toLowerCase().includes(searchQuery);
   });
 
-  updateContent(filteredAcronyms);
+  updateContent(filteredAcronyms, searchQuery);
 });
 
 </script>
