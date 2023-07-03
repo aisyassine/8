@@ -1,0 +1,392 @@
+<html>
+<head>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f5f5f5;
+  padding: 20px;
+  color: #333;
+  display: flex;
+  justify-content: space-between;
+}
+
+.container {
+  width: 45%;
+}
+
+a {
+  color: #007bff;
+  text-decoration: none;
+}
+
+a:hover {
+  color: #0056b3;
+}
+
+iframe {
+  width: 100%;
+  height: 600px;
+  border: 2px solid #007bff;
+}
+
+.sticky {
+  position: sticky;
+  top: 0;
+}
+
+</style>
+</head>
+<body>
+<div class="container" style="width: 35% ">
+  <h2>Acronyms</h2>
+  <div id="content" style="height: 100vh; overflow-y: auto;"></div>
+</div>
+
+<div class="container sticky" style="width: 65% " >
+  <h2>Details</h2>
+  <iframe id="infoframe" style="height: 100vh;"></iframe>
+</div>
+ 
+
+<script>
+let acronyms = [
+
+  ["2RP", "Réseau Radioélectrique Privé."],
+  ["3RD", "Réseau Radioélectrique Réservé aux Données."],
+  ["3RP", "Réseau Radioélectrique à Ressources Partagées."],
+  ["ADSL", "Asymmetrical bit rate Digital Subscriber Line."],
+  ["AES", "Advanced Encryption Standard (cryptage, pour remplacer DES)"],
+  ["AI n°5", "Alphabet International n°5 (= ASCII)."],
+  ["AMRF/T", "Accès Multiple à Répartition en Fréquence / dans le Temps (= FDMA/TDMA)."],
+  ["ANSI", "American National Standard Institute."],
+  ["API", "Application Programming Interface (accès aux fonctions d’un programme)"],
+  ["ARP", "Adress Resolution Protocol (réseaux IP)."],
+  ["ARQ", "Automatic Repeat reQuest."],
+  ["ASCII", "American Standard Code for Information Interchange."],
+  ["ASN-1", "Abstract Syntax Notation (couche 7 OSI)."],
+  ["ASP", "Application Service Provider (location en ligne d’application)"],
+  ["ATM", "Asynchronous Transfer Mode."],
+  ["B2B", "Business to Business (commerce entre entreprises)."],
+  ["B2C", "Business to Consumer (commerce d’entreprise à particulier)."],
+  ["BASIC", "Beginner's All purpose Symbolic Instruction Code."],
+  ["BBS", "Bulletin Board System (serveurs de fichiers et d’infos via RTC)."],
+  ["BERT/BLERT", "Bit Error Rate Transfer / BLoc Error Rate Transfer."],
+  ["BIND", "Berkeley Internet Name Daemon/Domain. (logiciel serveur nom DNS)"],
+  ["BIOS", "Basic Input/Output System."],
+  ["CATV", "Community Antenna TeleVision (câble réseau TV)."],
+  ["CCETT", "Centre Commun d'Etude de Télédiffusion et de Télécommunications."],
+  ["CCIR", "Comité Consultatif International des Radiocommunications (= UIT-R)."],
+  ["CCITT", "Comité Consultatif International Télégraphique et Téléphonique (= UIT-T)."],
+  ["CDMA", "Code Division Multiple Access (mobiles)."],
+  ["CEPT", "Conférence Européenne des Postes et Télécommunications."],
+  ["CGI", "Common Gateway Interface (internet)."],
+  ["CNET", "Centre National d'Etudes des Télécommunications."],
+  ["CNIL", "Commission Nationale de l’Informatique et des Libertés."],
+  ["COBOL", "COmmon Business Oriented Language."],
+  ["CORBA", "Common Object Request Broker Architecture (protocole d’objets distribués)."],
+  ["CRC", "Cyclic Redundancy Check. (Contrôle de Redondance Cyclique)."],
+  ["CSMA/CD", "Carrier Sense Multiple Access / Collision Detection."],
+  ["CT2/CAI", "Cordless Telephone 2d generation / Common Air Interface."],
+  ["CTI", "Couplage Téléphone Informatique / Computer Telephony Integration."],
+  ["DAEMON", "Disk And Execution MONitor (tâche UNIX)."],
+  ["DCE", "Data Circuit Equipment (id ETCD, Modem)."],
+  ["DCOM", "Distributed Component Object Model (origine Microsoft)."],
+  ["DCS", "Digital Cellular System (mobiles)."],
+  ["DECT", "Digital Enhanced Cordless Telephone (mobiles)."],
+  ["DES", "Data Encryption Standard (cryptage)."],
+  ["DHCP", "Dynamic Host Core Protocol (config IP auto)."],
+  ["DIN", "Deutsche Institut fur Normung."],
+  ["DLL", "Dynamic Link Library (windows)."],
+  ["DNS", "Domain Name System/Service (Internet)."],
+  ["DSA", "Distributed System Architecture. (réseau Bull)"],
+  ["DTE", "Data Terminal Equipment (id ETTD)."],
+  ["DTMF", "Dual Tone Multi-Frequency (telephone)."],
+  ["DVD", "Digital Versatile Disk (format CR-ROM)."],
+  ["EBCDIC", "Extended Binary Coded Decimal Interchange Code (BCD étendu)."],
+  ["ECMA", "European Computer Manufacturer Association."],
+  ["EDGE", "Enhanced Data GSM Environnement (mobiles)."],
+  ["EDI", "Echange de Documents Informatisé / Electronic Data Interchange."],
+  ["EIA", "Electrical Industries Association (normes RSxxx)."],
+  ["EJD", "Enterprise Java Beans (distribution d’objets java)."],
+  ["EPON", "Ethernet over Passive Optical Network."],
+  ["ERMES", "European Radio Messaging System (mobiles)."],
+  ["ERP", "Enterprise Resource Planning (Progiciel de gestion intégré)."],
+  ["ETCD", "Equipement Terminal de Circuit de Données (id DCE)."],
+  ["ETSI", "European Telecommunications Standard Institute."],
+  ["ETTD", "Equipement Terminal de Traitement de Données (id DTE)."],
+  ["FAI", "Fournisseur d’Accès Internet (id ISP)."],
+  ["FAQ", "Frequently Asked Questions / Foire Aux Questions (réponses aux questions courantes)."],
+  ["FAT", "File Allocation Table (format disque)"],
+  ["FCS", "Frame Check Sequence."],
+  ["FDDI", "Fiber Distributed Data Interface."],
+  ["FDMA", "Frequency Division Multiple Access (id AMRF)."],
+  ["FSK", "Frequency Shift Keying (modulation)."],
+  ["FORTRAN", "FORmula TRANslator."],
+  ["FTAM", "File Transfer Access and Management."],
+  ["FTP", "File Transfer Protocol."],
+  ["GIF", "Graphics Interchange Format (format image compressée)."],
+  ["GIMP", "GNU Image Manupulator Program."],
+  ["GPRS", "Generalized Packed Radio System (paquets à 115kbps sur GSM)."],
+  ["GSM", "Global System for Mobile communications."],
+  ["GUI", "Graphical User Interface."],
+  ["HDB (3)", "High Density Bipolary code (codage bande de base)."],
+  ["HDLC", "High level Data Link Control (communication)."],
+  ["HPIB/GPIB", "Hewlett Packard Interface Bus / General Purpose.."],
+  ["HTML", "Hyper Text Markup Language (internet)."],
+  ["HTTP", "Hyper Text Transfer Protocol (internet)."],
+  ["ICANN", "Internet Corporation for Assigned Names and Numbers (Internet)."],
+  ["IDE", "Integrated Device Electronics (disques PC)"],
+  ["IDS", "Intrusion Detection System (sécurité)."],
+  ["IEEE", "Institute of Electrical and Electronic Engineers."],
+  ["IETF", "Internet Engineering Task Force (normes internet)."],
+  ["IMAP", "Interactive Mail Access Protocol (internet). "],
+["INRIA", "Institut National de Recherche en Informatique et Automatisme."],
+["IP", "Internet Protocol."],
+["IPX/SPX", "Internet Packet eXchange / Sequenced Packet eXchange (Novell)."],
+["IRLE", "Interconnexion des Réseaux Locaux d’Entreprise."],
+["ISDN", "Integrated Service Digital Network (id RNIS)."],
+["ISP", "Internet Service Provider (id FAI : fournisseur d’accès Internet)"],
+["ISO", "International Standards Organisation."],
+["IUT-T", "International Union of Telecommunications - Telecommunications sector."],
+["JPEG", "Join Photographic Expert Group."],
+["LAN", "Local Area Network."],
+["LAP B", "Link Access Protocol (B type)."],
+
+
+
+ ["LDAP", "Lightweight Directory Access Protocol (annuaires)."],
+  ["LLC", "Logical Link Control (802.2)."],
+  ["MAC", "Media Access Control (niveau 2 LAN)."],
+  ["MAN", "Metropolitan Area Network."],
+  ["MAP", "Manufacturing Automation Protocol."],
+  ["MAU", "Multistation Access Unit (réseau Token Ring)."],
+  ["MIB", "Management Information Base (base info équipement pour SNMP)."],
+  ["MIC /DA", "Modulation par Impulsion et Codage / Différentielle Adaptative."],
+  ["MIME", "Multipurpose Internet Mail Extension (données multimédia par mail)."],
+  ["MMS", "Multimedia Messages Services (mobiles)."],
+  ["MNP x", "Microcom Network Protocol (modems)."],
+  ["MSSP", "Managed Security Service Providers."],
+  ["MTBF", "Mean Time Between (Before) Failures."],
+  ["MP3", "MPEG1/2 - Audio layer 3."],
+  ["MPEG", "Moving (Motion) Picture Experts Group."],
+  ["NAT", "Network Address Translation, translation d’adresse IP (RFC 1631)."],
+  ["NBS", "National Bureau of Standards (USA)."],
+  ["NDIS", "Network Driver Interface Specification."],
+  ["NETBIOS", "NETwork Basic Input Output System (IBM)."],
+  ["NFS", "Network File System (partage de fichiers - UNIX)."],
+  ["NIC", "Network Information Center (centre chargé des noms DNS)."],
+  ["NNTP", "Network News Transfer Protocol (protocole pour les forums RFC977)."],
+  ["NRZ", "No Return to Zero (Non Retour à Zéro)."],
+  ["NT/NTFS", "New Technology / NT File System (Microsoft)."],
+  ["NTIC", "Nouvelles Technologies de l’Information et de la Communication."],
+  ["NTP", "Network Time Protocol (RFC 1305)."],
+  ["OCR", "Optical Characters Recognition."],
+  ["ODI", "Open Data-link Interface."],
+  ["OEM", "Original Equipment Manufacturer."],
+  ["OSI", "Open System Interconnection (modèle X200)."],
+  ["PABX", "Private Automatic Branch eXchange (autocommutateur privé)."],
+  ["PAD", "Packet Assembler Desassembler."],
+  ["PCM", "Pulse Coded Modulation. (id MIC)."],
+  ["PCMCIA", "Personal Computer Memory Card International Association (interface PC portable)."],
+  ["PCN", "Personal Communication Network (mobiles)."],
+  ["PDA", "Personal Digital Assistant."],
+  ["PDF", "Portable Document Format (format Adobe)."],
+  ["PDU", "Protocol Data Unit (modèle en couche)."],
+  ["PERL", "Practical Extraction Report Language (langage pour procédures sur serveur)."],
+  ["PGP", "Pretty Good Privacy (Protocole de cryptographie à double clé)."],
+  ["PHP", "Personal Home Page (scripts)."],
+  ["PING", "Packet INternet Groper."],
+  ["PIRE", "Puissance Isotrope Rayonnée Equivalente (satellite)."],
+  ["PKI", "Public Key Infrastructure (chiffrement)."],
+  ["PMR", "Professional Mobile Radiocommunication (id 2RP)"],
+  ["PNG", "Portable Network Graphic, Format d’images (RFC 2083)."],
+  ["POTS", "Plain Ordinary/Old Telephone Service (service téléphonique de base)."],
+  ["POP(3)", "Post Office Protocol (internet)."],
+  ["PPP", "Point to Point Protocol (internet)."],
+  ["PSTN", "Public Switched Telephone Network (id RTCP)."],
+  ["PTS", "Point de Transfert Sémaphore (RNIS)."],
+  ["QOS", "Quality Of Service"],
+  ["RADIUS", "Remote Access Dial In User Server (authentification d’un abonné)."],
+  ["RAID", "Redundancy Array of Inexpensive/Independent Disk (archivage)."],
+  ["RFC", "Request For Comment (normes Internet)."],
+  ["RIP", "Routing Information Protocol."],
+  ["RIPE", "Réseaux IP Européens (organisme chargé des adresses IP et noms pour l’Europe)."],
+  ["RISC", "Reduced Instruction Set Code/Computer."],
+  ["RLAN", "Radio Local Area Network."],
+  ["RNIS", "Réseau Numérique à Intégration de Services (id Numéris)."],
+  ["RSA", "Rivest Shamir and Adleman (algorithme de cryptage)."],
+  ["RTC(P)", "Réseau Téléphonique Commuté (Public)."],
+  ["RTC", "Real Time Clock (PC)."],
+  ["SAN", "Storage Area Network."],
+  ["SANS", "System Administration, Networking & Security."],
+  ["SCSI", "Small Computer System Interface."],
+  ["SDH", "Synchronous Digital Hierarchy (opérateurs télécom)."],
+  ["SDLC", "Synchronous Data Link Control."],
+  ["SESAME", "Système Electronique de Saisie et d'Aiguillages de MEssages."],
+  ["SGBD", "Système de Gestion de Base de Données."],
+  ["SLIC", "Subscriber Loop Interface Circuit (interface boucle abonné)."],
+  ["SLIP", "Serial Line Internet Protocol (obsolète)."],
+   ["SMB", "Server Message Block (standard de partage fichiers Dos/win/os2/netware..)."],
+  ["SMS", "Short Message Service (mobiles GSM)"],
+  ["SMTP", "Simple Mail Transfer Protocol (Internet)."],
+  ["SNA", "Systems Network Architecture (réseau IBM)."],
+  ["SNMP", "Simple Network Management Protocol."],
+  ["SOAP", "Simple Object Access Protocol."],
+  ["SOHO", "Small Office and Home Office."],
+  ["SONET", "Synchronous Optical NETwork (equ SDH)."],
+  ["SPAM", "« Shoulder of Pork and hAM » (jambon en conserve), email publicitaire de masse."],
+  ["SPOOL", "Simultaneous Peripheral Operation On Line (mise en file d’attente)."],
+  ["SQL", "Structured Query Language."],
+  ["SSL", "Secure Socket Layer (protocole de sécurité sur HTML)."],
+  ["SSII", "Société de Service et d’Ingénierie en Informatique."],
+  ["STMx", "Synchronous Transmission Module (trames sur SDH)."],
+  ["TACACS", "Terminal Access Controller Access Control System (authentification)."],
+  ["TCO", "Total Cost Ownership (Coût Total de Possession)."],
+  ["TCP/IP", "Transmission Control Protocol / Internet Protocol."],
+  ["TDMA", "Time Division Multiple Access (= AMRT)."],
+  ["TETRA", "TErrestrial Trunked RAdio (mobiles)"],
+  ["TIFF", "Tagged Image File Format (image CAO/DAO)."],
+  ["TNA/TNR", "Terminaison Numérique d’Abonné/Réseau."],
+  ["TWAIN", "Technology Without Any Important Name (protocole scanner et app. Photo)"],
+  ["UCSD", "University of California San Diego."],
+  ["UDP", "User Datagram Protocol (internet)."],
+  ["UIT-T", "Union Internationale des Télécommunications - secteur des Télécommunications."],
+  ["UMTS", "Universal Mobile Telecommunication System (384kbps.. pour mobiles)."],
+  ["URL", "Uniform Resource Locator (internet)."],
+  ["USB", "Universal Serial Bus (périphériques PC)."],
+  ["UTF-8", "Universal Transformation Format 8 bits (conversion d’Unicode en 8 bits)"],
+  ["VGA", "Video Graphic Adapter."],
+  ["VOIP", "Voice Over IP"],
+  ["VPN", "Virtual Private Network. (Via tunnel sur réseaux publics)."],
+  ["VRML", "Virtual Reality Modeling Language (3D)."],
+  ["VSAT", "Very Small Aperture Terminal (réseau satellite)."],
+  ["WAN", "Wide Area Network."],
+  ["WAP", "Wireless Application Protocol (portables – Internet)."],
+  ["W-CDMA", "Wideband Code Division Multiple Access (mobiles)."],
+  ["WEP", "Wireless Equivalent Privacy (cryptage Ethernet sans-fil)"],
+  ["WDM", "Wavelength Division Multiplexing (fibre optique)."],
+  ["WINS", "Windows Internet Name Service (Microsoft)."],
+  ["WLAN", "Wireless Local Area Network (sans fil, id RLAN)"],
+  ["WML", "Wireless Markup Language (langage pour WAP)."],
+  ["WSDL", "Web Services Description Language."],
+  ["WWW", "World Wide Web (internet)."],
+  ["WYSIWYG", "What You See Is What You Get."],
+  ["XML", "eXtensible Markup Language (Web)."],
+  ["XNS", "Xerox Network System."],
+   ["ABR", "Available Bit Rate (ATM)"],
+  ["ACID", "Atomicity, Consistency, Isolation, Durability"],
+  ["ADC", "Analog-to-Digital Converter"],
+  ["APIPA", "Automatic Private IP Addressing"],
+  ["BGP", "Border Gateway Protocol"],
+  ["BLOB", "Binary Large Object"],
+  ["BSS", "Base Station Subsystem"],
+  ["CDN", "Content Delivery Network"],
+  ["CLI", "Command Line Interface"],
+  ["CRUD", "Create, Read, Update, Delete"],
+  ["DaaS", "Desktop as a Service"],
+  ["DHCP", "Dynamic Host Configuration Protocol"],
+  ["DOS", "Disk Operating System"],
+  ["DSL", "Digital Subscriber Line"],
+  ["ECC", "Elliptic Curve Cryptography"],
+  ["FIFO", "First In, First Out"],
+  ["FTP", "File Transfer Protocol"],
+  ["GPIO", "General Purpose Input/Output"],
+  ["GUI", "Graphical User Interface"],
+  ["HDMI", "High-Definition Multimedia Interface"],
+  ["HTML", "Hypertext Markup Language"],
+  ["HTTP", "Hypertext Transfer Protocol"],
+  ["HTTPS", "Hypertext Transfer Protocol Secure"],
+  ["IaaS", "Infrastructure as a Service"],
+  ["IDE", "Integrated Development Environment"],
+  ["IoT", "Internet of Things"],
+  ["JSON", "JavaScript Object Notation"],
+  ["LAN", "Local Area Network"],
+  ["LTE", "Long-Term Evolution"],
+  ["MAC", "Media Access Control"],
+  ["NAT", "Network Address Translation"],
+  ["OCR", "Optical Character Recognition"],
+  ["ORM", "Object-Relational Mapping"],
+  ["PaaS", "Platform as a Service"],
+  ["PCI", "Peripheral Component Interconnect"],
+  ["PHP", "PHP: Hypertext Preprocessor"],
+  ["QoS", "Quality of Service"],
+  ["RAID", "Redundant Array of Independent Disks"],
+  ["REST", "Representational State Transfer"],
+  ["RFID", "Radio-Frequency Identification"],
+  ["ROM", "Read-Only Memory"],
+  ["RTOS", "Real-Time Operating System"],
+  ["SaaS", "Software as a Service"],
+  ["SAN", "Storage Area Network"],
+  ["SDK", "Software Development Kit"],
+  ["SMTP", "Simple Mail Transfer Protocol"],
+  ["SOAP", "Simple Object Access Protocol"],
+  ["SSD", "Solid State Drive"],
+  ["TCP", "Transmission Control Protocol"],
+  ["TLS", "Transport Layer Security"],
+  ["URL", "Uniform Resource Locator"],
+  ["VLAN", "Virtual Local Area Network"],
+  ["VPN", "Virtual Private Network"],
+  ["WAN", "Wide Area Network"],
+  ["XML", "eXtensible Markup Language"],
+  ["ZIP", "Zone Improvement Plan"],
+   ["SD-WAN", "Software-Defined Wide Area Network"],
+  ["WWAN", "Wireless Wide Area Network"]
+
+
+ 
+];
+
+// Trier les acronymes en ordre alphabétique
+acronyms.sort((a, b) => {
+  const acronymA = a[0].split(' ')[0].toLowerCase();
+  const acronymB = b[0].split(' ')[0].toLowerCase();
+
+  if (acronymA < acronymB) {
+    return -1;
+  } else if (acronymA > acronymB) {
+    return 1;
+  } else {
+    return 0;
+  }
+});
+
+// Supprimer les doublons
+let uniqueAcronyms = [];
+let previousAcronym = '';
+
+for (let i = 0; i < acronyms.length; i++) {
+  const currentAcronym = acronyms[i][0].split(' ')[0];
+
+  if (currentAcronym !== previousAcronym) {
+    uniqueAcronyms.push(acronyms[i]);
+    previousAcronym = currentAcronym;
+  }
+}
+
+let formattedContent = '';
+
+for (let i = 0; i < uniqueAcronyms.length; i++) {
+  const acronymData = uniqueAcronyms[i];
+  const acronym = acronymData[0].split(' ')[0];
+
+  const hyperlink = `<a href="#" data-url="https://en.wikipedia.org/wiki/${acronym}">${acronym}</a>`;
+  const formattedLine = acronymData[0].replace(acronym, hyperlink);
+
+  formattedContent += formattedLine + '<br>' + acronymData[1] + '<br><br>';
+}
+
+document.getElementById('content').innerHTML = formattedContent;
+
+const links = document.querySelectorAll('#content a');
+
+for (let link of links) {
+  link.addEventListener('click', function(event) {
+    event.preventDefault();
+
+    document.getElementById('infoframe').src = this.getAttribute('data-url');
+  });
+}
+
+</script>
+</body>
+</html>
