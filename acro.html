@@ -34,11 +34,25 @@ iframe {
   top: 0;
 }
 
+input[type="text"] {
+  width: 100%;
+  padding: 12px 20px;
+  margin: 8px 0;
+  box-sizing: border-box;
+  border-radius: 4px;
+  border: 2px solid #ccc;
+}
+
+
 </style>
 </head>
 <body>
 <div class="container" style="width: 35% ">
+
   <h2>Acronyms</h2>
+   <input type="text" id="search" placeholder="Search acronyms...">
+
+
   <div id="content" style="height: 100vh; overflow-y: auto;"></div>
 </div>
 
@@ -363,30 +377,44 @@ for (let i = 0; i < acronyms.length; i++) {
     previousAcronym = currentAcronym;
   }
 }
+function updateContent(filteredAcronyms) {
+  let formattedContent = '';
 
-let formattedContent = '';
+  for (let i = 0; i < filteredAcronyms.length; i++) {
+    const acronymData = filteredAcronyms[i];
+    const acronym = acronymData[0].split(' ')[0];
 
-for (let i = 0; i < uniqueAcronyms.length; i++) {
-  const acronymData = uniqueAcronyms[i];
-  const acronym = acronymData[0].split(' ')[0];
+    const hyperlink = `<a href="#" data-url="https://en.wikipedia.org/wiki/${acronym}">${acronym}</a>`;
+    const formattedLine = acronymData[0].replace(acronym, hyperlink);
 
-  const hyperlink = `<a href="#" data-url="https://en.wikipedia.org/wiki/${acronym}">${acronym}</a>`;
-  const formattedLine = acronymData[0].replace(acronym, hyperlink);
+    formattedContent += formattedLine + '<br>' + acronymData[1] + '<br><br>';
+  }
 
-  formattedContent += formattedLine + '<br>' + acronymData[1] + '<br><br>';
+  document.getElementById('content').innerHTML = formattedContent;
+
+  const links = document.querySelectorAll('#content a');
+
+  for (let link of links) {
+    link.addEventListener('click', function(event) {
+      event.preventDefault();
+
+      document.getElementById('infoframe').src = this.getAttribute('data-url');
+    });
+  }
 }
 
-document.getElementById('content').innerHTML = formattedContent;
+updateContent(uniqueAcronyms);
 
-const links = document.querySelectorAll('#content a');
+document.getElementById('search').addEventListener('input', function() {
+  let searchQuery = this.value.toLowerCase();
 
-for (let link of links) {
-  link.addEventListener('click', function(event) {
-    event.preventDefault();
-
-    document.getElementById('infoframe').src = this.getAttribute('data-url');
+  let filteredAcronyms = uniqueAcronyms.filter(acronymData => {
+    return acronymData[0].toLowerCase().includes(searchQuery) ||
+           acronymData[1].toLowerCase().includes(searchQuery);
   });
-}
+
+  updateContent(filteredAcronyms);
+});
 
 </script>
 </body>
